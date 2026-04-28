@@ -1,19 +1,10 @@
 #!/usr/bin/env bash
-# n3recon-v2.1.sh - Modified for Output Flag and API Key Rotation
+# n3recon-v2.1.sh
 
 set -o errexit
 set -o nounset
 set -o pipefail
 
-
-#--------------temporary fix command ---------------
-# Unalias tools that often conflict with local aliases
-if alias gf >/dev/null 2>&1; then
-  unalias gf || true
-fi
-if alias gau >/dev/null 2>&1; then
-  unalias gau || true
-fi
 
 # ----------------- DEFAULTS -----------------
 THREADS=${THREADS:-200}
@@ -32,9 +23,6 @@ WHITELIST_ARG=""
 API_KEYS_FILE=""
 WORDLIST=""
 DOMAINS=()
-
-# --- TOOL PATHS (Auto-detected - no hardcoded paths) ---
-# Tools are auto-detected using 'has' command. Optional tools will be skipped if not found.
 
 
 # ----------------- HELPERS -----------------
@@ -137,7 +125,7 @@ fi
 
 safe_run(){ log "RUN: $*"; if ! eval "$@" >>"${LOG}" 2>&1; then log "WARN: command failed: $*"; fi }
 
-# CHANGE 2: Load API configs to handle comma-separated keys for rotation
+# Load API configs to handle comma-separated keys for rotation
 load_api_configs() {
   if [ -n "$API_KEYS_FILE" ] && [ -f "$API_KEYS_FILE" ]; then
     # For subfinder, we still point to the config file (it handles its own logic)
@@ -156,7 +144,7 @@ load_api_configs() {
   fi
 }
 
-# CHANGE 2: Function to iterate through keys until success
+# Function to iterate through keys until success
 run_with_key_rotation() {
     local tool_name="$1"
     local key_var_name="$2" # e.g., ALL_CHAOS_KEYS
@@ -295,7 +283,7 @@ for TARGET in "${DOMAINS[@]}"; do
   fi
 
   LOG="$OUTDIR/pipeline.log"
-  # figlet "n3recon" | tee -a "$LOG" # Commented out, figlet is an optional dependency
+  # figlet "n3recon" | tee -a "$LOG"
   echo "_created by me(n3dir)----v3" | tee -a "$LOG"
   echo "==== Ultimate Recon Using n3recon-v3 run for $TARGET - Global Run $RUN_ID @ $TIMESTAMP ====" | tee -a "$LOG"
   echo "Full directory: $OUTDIR" | tee -a "$LOG"
@@ -360,7 +348,7 @@ EOF
     log "Enumerating subdomains for $TARGET with ultimate tools (Global Run $RUN_ID)"
     > "$SUBS_ALL"
 
-    # Project Discovery: subfinder (Uses SUBFINDER_CONFIG environment variable)
+    # Subfinder
     if has subfinder; then
       safe_run "subfinder -d $TARGET -all -recursive=$RECURSIVE -t $THREADS -silent -o $OUTDIR/subdomains/subfinder.txt"
     fi
@@ -390,7 +378,7 @@ EOF
       safe_run "sublist3r -d $TARGET -t $THREADS -o $OUTDIR/subdomains/sublist3r.txt"
     fi
 
-    # Chaos (CHANGE 2: Use rotation function)
+    # Chaos
     if has chaos && [ -n "${ALL_CHAOS_KEYS:-}" ]; then
       run_with_key_rotation "chaos" "ALL_CHAOS_KEYS" "chaos -d $TARGET -key KEY_PLACEHOLDER -o $OUTDIR/subdomains/chaos.txt"
     fi
@@ -435,9 +423,9 @@ EOF
       curl -s "https://riddler.io/search/exportcsv?q=pld:$TARGET" | grep -Po "(([\w.-]*)\.${TARGET})" | sort -u > "$OUTDIR/subdomains/riddler.txt" || true
     fi
 
-    # SecurityTrails (CHANGE 2: Use rotation function)
+    # SecurityTrails 
     if [ -n "${ALL_SECURITYTRAILS_KEYS:-}" ] && has curl && has jq; then
-      # Need to adjust the template to ensure curl/jq works, replacing $TARGET correctly
+      # Need to adjust the template to ensure curl/jq works
       # The API call returns JSON which needs jq parsing
       run_with_key_rotation "SecurityTrails" "ALL_SECURITYTRAILS_KEYS" 'curl -s "https://api.securitytrails.com/v1/domain/'"$TARGET"'/subdomains?children_only=false&include_inactive=true" -H "APIKEY: KEY_PLACEHOLDER" | jq -r ".subdomains[] | . + \".\" + \"'"$TARGET"'\"" | sort -u > '$OUTDIR'/subdomains/securitytrails.txt'
     fi
@@ -496,7 +484,7 @@ EOF
     fi
   fi
 
-# ----------------- HTTP(S) PROBE ----------------- V2 -----
+# ----------------- HTTP(S) PROBE ----------------------
   if [ ! -s "$ALIVE" ] || ! $RESUME || $NEW_RUN; then
     log "Probing HTTP(S) endpoints with httpx (checks if sub is alive.) (Global Run $RUN_ID)"
   
@@ -549,13 +537,13 @@ EOF
   if [ ! -s "$OSINT_EMAILS" ] || ! $RESUME || $NEW_RUN; then
     log "Gathering OSINT with theHarvester (Global Run $RUN_ID)"
     if has theHarvester; then
-      # Using 'theHarvester' directly instead of 'uv run' for broader compatibility
+      # Using 'theHarvester'
       safe_run "theHarvester -d $TARGET -b all -f $OUTDIR/osint/harvester"
       grep -oP '[\w\.-]+@[\w\.-]+' "$OUTDIR/osint/harvester"* | sort -u > "$OSINT_EMAILS" || true
     fi
   fi
 
-  # ----------------- URL COLLECTION & CRAWLING (FIXED: Parallelization) -----------------
+  # ----------------- URL COLLECTION & CRAWLING -----------------
   if [ ! -s "$URLS_ALL" ] || ! $RESUME || $NEW_RUN; then
     log "Collecting and crawling URLs with multiple tools (Global Run $RUN_ID) - PARALLEL MODE"
     > "$URLS_ALL"
