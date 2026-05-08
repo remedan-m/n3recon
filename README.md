@@ -38,41 +38,33 @@ go install github.com/projectdiscovery/katana/cmd/katana@latest
 go install -v github.com/projectdiscovery/pdtm/cmd/pdtm@latest
 pdtm -install-all
 
-# Install other useful tools
+# Install additional tools
+
 go install github.com/tomnomnom/assetfinder@latest
 go install github.com/tomnomnom/gf@latest
 go install github.com/tomnomnom/waybackurls@latest
-go install github.com/tomnomnom/hakrawler@latest
-go install github.com/Emoe/gau/v2/cmd/gau@latest
-go install github.com/sullo/nikto@latest
-go install github.com/OWASP/Amass/v3/...@latest
+go install github.com/hakluke/hakrawler@latest
+$ go install github.com/lc/gau/v2/cmd/gau@latest
+go install -v github.com/owasp-amass/amass/v5/cmd/amass@main
 go install github.com/cgboal/sonarsearch/cmd/crobat@latest
-go install github.com/projectdiscovery/uncover/cmd/uncover@latest
-go install github.com/hahwul/dalfox/v2/cmd/dalfox@latest
+go install github.com/003random/getJS@latest
+go install github.com/jaeles-project/gospider@latest
+go install github.com/lc/subjs@latest
+go install github.com/tomnomnom/anew@latest
 
-# Install findomain
-wget https://github.com/Edu4rdSHL/findomain/releases/latest/download/findomain-linux.zip
-unzip findomain-linux.zip && chmod +x findomain && sudo mv findomain /usr/local/bin/
+# Install findomain - you need rust installed for this one
+git clone https://github.com/findomain/findomain.git
+cd findomain
+cargo build --release
+sudo cp target/release/findomain /usr/bin/
+findomain
 
 # Install Python tools
 pip install sublist3r subdomainizer secretfinder linkfinder cloud_enum js-beautify
 
-# Install additional tools
-pip install pydictor || true
-go install github.com/Josue87/gotator@latest
-go install github.com/nyx0/gospider@latest
-go install github.com/lc/gau/v2/cmd/gau@latest
-go install github.com/003random/getJS@latest
-go install github.com/jaeles-project/gospider@latest
-go install github.com/hahwul/subjs@latest
-go install github.com/0xDivy/anew@latest
-go install github.com/tomnomnom/anew@latest
-go install github.com/sullo/nikto@latest
-go install github.com/hahwul/nofingerprint@latest
-go install github.com/projectdiscovery/cdncheck/cmd/cdncheck@latest
 
 # Install trufflehog
-go install github.com/trufflesecurity/trufflehog@latest
+curl -sSfL https://raw.githubusercontent.com/trufflesecurity/trufflehog/main/scripts/install.sh | sh -s -- -b /usr/local/bin
 
 # Install gowitness
 go install github.com/sensepost/gowitness@latest
@@ -86,6 +78,10 @@ pip install uro
 
 # Install SecLists (wordlists)
 git clone https://github.com/danielmiessler/SecLists /usr/share/wordlists/SecLists
+OR
+wget -c https://github.com/danielmiessler/SecLists/archive/master.zip -O SecList.zip && unzip SecList.zip && rm -f SecList.zip
+
+
 ```
 
 ## Usage
