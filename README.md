@@ -33,6 +33,11 @@ go install github.com/projectdiscovery/asnmap/cmd/asnmap@latest
 go install github.com/projectdiscovery/tlsx/cmd/tlsx@latest
 go install github.com/projectdiscovery/katana/cmd/katana@latest
 
+# or Install all this tools using ProjectDiscovery's Open Source Tool Manager
+
+go install -v github.com/projectdiscovery/pdtm/cmd/pdtm@latest
+pdtm -install-all
+
 # Install other useful tools
 go install github.com/tomnomnom/assetfinder@latest
 go install github.com/tomnomnom/gf@latest
